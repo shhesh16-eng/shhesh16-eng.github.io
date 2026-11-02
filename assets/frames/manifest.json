@@ -1,0 +1,7 @@
+{
+  "count": 200,
+  "pattern": "f_{i}.webp",
+  "pad": 3,
+  "aspect": 1.77778,
+  "sets": { "desktop": 1600, "mobile": 800 }
+}

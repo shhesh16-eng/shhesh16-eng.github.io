@@ -139,7 +139,8 @@
         }),
       { rootMargin: "0px 0px -8% 0px" }
     );
-    document.querySelectorAll(".row-head, .card, .hero, .tabs, .categories").forEach((el) => {
+    // Cards and row titles get cinematic 3D reveals from cinema.js (GSAP) instead.
+    document.querySelectorAll(".hero, .tabs, .categories").forEach((el) => {
       el.classList.add("reveal");
       io.observe(el);
     });
@@ -224,7 +225,9 @@
     document.addEventListener("pointerleave", () => glow.classList.remove("on"));
   }
 
-  /* ---------- Particle network background ---------- */
+  /* ---------- Particle network background ----------
+     Fallback only: cinema.js draws a WebGL scene on #bg, and calls this if WebGL is unavailable. */
+  window.trueStoriesParticles = () => {
   const canvas = document.getElementById("bg");
   if (canvas && !reduceMotion) {
     const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
@@ -326,4 +329,5 @@
     };
     requestAnimationFrame(draw);
   }
+  };
 })();

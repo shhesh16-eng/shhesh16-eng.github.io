@@ -855,3 +855,96 @@ header.site nav a.nav-netflix:hover { color: #fff; text-shadow: 0 0 10px rgba(22
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* ---------- Cinematic layer (cinema.js: Three.js scene, GSAP, Lenis) ---------- */
+
+/* Lenis does its own smoothing; native smooth scrolling would fight it. */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+
+/* The 3D scene fades in once WebGL is running. */
+.has-3d #bg { animation: bg-in 2.4s ease both; }
+@keyframes bg-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Edge darkening, like a lens. Static, so it costs nothing per frame. */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.65) 100%);
+}
+
+/* Film grain: a tiny noise tile nudged around in steps (transform only, compositor-friendly). */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  will-change: transform;
+  animation: grain 0.9s steps(6) infinite;
+}
+@keyframes grain {
+  0% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-4%, 3%, 0); }
+  40% { transform: translate3d(3%, -5%, 0); }
+  60% { transform: translate3d(-6%, -2%, 0); }
+  80% { transform: translate3d(5%, 4%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+/* Opening shutter: two black bars part to reveal the site, like the start of a film. */
+.shutter {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+.shutter::before, .shutter::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background: #000;
+  animation: shutter-open 1.5s cubic-bezier(0.77, 0, 0.18, 1) 0.9s both;
+}
+.shutter::before { top: 0; transform-origin: top; }
+.shutter::after { bottom: 0; transform-origin: bottom; }
+/* Bars stop at 0 height but leave a thin letterbox fade on the way. */
+@keyframes shutter-open { to { transform: scaleY(0); } }
+.shutter-title {
+  position: relative;
+  z-index: 1;
+  font: 900 clamp(22px, 5vw, 54px) var(--head);
+  letter-spacing: 0.5em;
+  padding-left: 0.5em;
+  color: #fff;
+  text-shadow: var(--neon);
+  animation: shutter-title 1.6s ease both;
+}
+@keyframes shutter-title {
+  0% { opacity: 0; letter-spacing: 1.2em; }
+  45% { opacity: 1; letter-spacing: 0.5em; }
+  70% { opacity: 1; }
+  100% { opacity: 0; letter-spacing: 0.4em; }
+}
+.shutter { animation: shutter-done 0s linear 2.5s both; }
+@keyframes shutter-done { to { visibility: hidden; } }
+.seen .shutter { display: none; }
+
+/* GSAP scales the banner as it scrolls away; keep its rounded corners clipped. */
+.carousel, .billboard.detail { transform-origin: center top; }
+
+@media (max-width: 720px) {
+  .grain { animation: none; opacity: 0.05; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shutter, .grain { display: none; }
+}
